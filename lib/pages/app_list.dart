@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:getonnet_task/models/discover_movie.dart';
 import 'package:getonnet_task/models/movie_list.dart';
 
 import '../controller/movie_list_controller.dart';
@@ -21,12 +22,17 @@ class _AppListState extends State<AppList>  with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    Get.put(MovieListController());
     Get.find<MovieListController>().getMovieListData();
+    Get.find<MovieListController>().movieList.value.genres.length;
     _tabController = TabController(vsync: this, length: Get.find<MovieListController>().movieList.value.genres.length);
   }
 
   @override
   Widget build(BuildContext context) {
+    Get.put(MovieListController());
+    Get.find<MovieListController>().getMovieListData();
+    print("length 1st: ${Get.find<MovieListController>().movieList.value.genres.length}");
     return ListView(
       padding: EdgeInsets.all(8),
       shrinkWrap: true,
@@ -50,6 +56,7 @@ class _AppListState extends State<AppList>  with TickerProviderStateMixin {
   }
 
   _tabBar() {
+    Get.find<MovieListController>().getMovieListData();
     return Container(
       height: MediaQuery.of(context).size.height,
       decoration: BoxDecoration(
@@ -67,6 +74,7 @@ class _AppListState extends State<AppList>  with TickerProviderStateMixin {
       ),
       child: DefaultTabController(
         length: Get.find<MovieListController>().movieList.value.genres.length,
+        //length: 19,
         child: Padding(
           padding: const EdgeInsets.all(0.0),
           child: Column(
@@ -115,6 +123,7 @@ class _AppListState extends State<AppList>  with TickerProviderStateMixin {
                               ),
                             ],*/
                   tabs: Get.find<MovieListController>().movieList.value.genres.map((e) {
+                    print("length : ${Get.find<MovieListController>().movieList.value.genres.length}");
                     return Text(e.name);
                   }).toList(),
                 ),
@@ -149,19 +158,31 @@ class _AppListState extends State<AppList>  with TickerProviderStateMixin {
                               ),
                             ],*/
                   children: Get.find<MovieListController>().movieList.value.genres.map((e) {
-                    return Center(child: SizedBox(
-                      height: 150,
-                      width: MediaQuery.of(context).size.width - 20,
-                      child: Card(
-                          elevation: 4,
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(
-                                color: Colors.black,
-                                width: 1.0),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Center(child: Text("Movie Genres Id : ${e.id}"))),
-                    )
+                    return Column(
+                      children: [
+                        Center(child: SizedBox(
+                          height: 150,
+                          width: MediaQuery.of(context).size.width - 20,
+                          child: Card(
+                              elevation: 4,
+                              shape: RoundedRectangleBorder(
+                                side: BorderSide(
+                                    color: Colors.black,
+                                    width: 1.0),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Center(child: Column(
+                                children: [
+                                  SizedBox(height: 20,),
+                                  Text("Movie Genres Id : ${Get.find<MovieListController>().movieList.value.genres.length}"),
+                                  SizedBox(height: 20,),
+                                  _discoverMovie()
+                                ],
+                              ))),
+                        )
+                        ),
+                        //_discoverMovie()
+                      ],
                     );
                   }).toList(),
                 ),
@@ -171,6 +192,38 @@ class _AppListState extends State<AppList>  with TickerProviderStateMixin {
         ),
       ),
     );;
+  }
+
+  _discoverMovie() {
+    return Padding(
+      padding: const EdgeInsets.all(1.0),
+      child: FutureBuilder<DiscoverMovie>(
+        future: api.discoverMovie(),
+        builder: (context, snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.active:
+
+            case ConnectionState.waiting:
+              return const Center(
+                  child: CircularProgressIndicator(
+                    backgroundColor: Colors.red,
+                  ));
+
+            case ConnectionState.none:
+              return Center(child: Text("Unable to connect right now"));
+
+            case ConnectionState.done:
+              return Column(
+                children: [
+                  Text("Title : ${snapshot.data!.results.first.title}"),
+                  Text("Vote : ${snapshot.data!.results.first.voteCount}"),
+                  Text("Release Date : ${snapshot.data!.results.first.releaseDate}"),
+                ],
+              );
+          }
+        },
+      ),
+    );
   }
 
 }

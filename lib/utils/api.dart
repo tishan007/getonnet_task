@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:getonnet_task/utils/remote_config.dart';
 import 'package:http/http.dart' as http;
 
+import '../models/discover_movie.dart';
 import '../models/movie_list.dart';
 
 class Api {
@@ -28,4 +29,26 @@ class Api {
       return movieListFromJson(response.body);
     }
   }
+
+  Future<DiscoverMovie> discoverMovie() async {
+    String discoverMovie = RemoteConfig.config["DISCOVER_MOVIE"] ?? "";
+
+    var response = await http.get(
+      Uri.parse("$baseUrl$discoverMovie"),
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2MTA3Yjk2YzhjN2UyZGE5MmRkMTAwNTk5ZjRmOWExOSIsInN1YiI6IjY0ZTVmZTc2NTI1OGFlMDBjOTRiMTI1NyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XdhoBzRaIEFEhI4iAWHXe0YnU2oZ_ZeiJCuA9_5i7kI",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print("=======discoverMovie response======= : " + response.body);
+      return discoverMovieFromJson(response.body);
+    } else {
+      print("discoverMovie error : " + response.body);
+      return discoverMovieFromJson(response.body);
+    }
+  }
+
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:getonnet_task/pages/app_list.dart';
+import 'package:getonnet_task/pages/movie_page.dart';
+import 'package:getonnet_task/pages/movies.dart';
 
 import 'controller/movie_list_controller.dart';
 
@@ -22,10 +24,15 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
 
     Get.put(MovieListController());
+    Get.find<MovieListController>().getMovieListData();
+    print("length main: ${Get.find<MovieListController>().movieList.value.genres.length}");
+
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: AppList(),
+        //body: AppList(),
+        //body: MoviePage(),
+        body: Movies(),
       ),
     );
   }
