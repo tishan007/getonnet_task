@@ -1,8 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:getonnet_task/models/discover_movie.dart';
-import 'package:getonnet_task/models/movie_list.dart';
+import 'package:getonnet_task/controller/discover_movie_controller.dart';
 
 import '../controller/movie_list_controller.dart';
 import '../utils/api.dart';
@@ -18,14 +17,17 @@ class _AppListState extends State<AppList>  with TickerProviderStateMixin {
 
   TabController? _tabController;
   Api api = Api();
+  int tappedIndex = 0;
 
   @override
   void initState() {
     super.initState();
     Get.put(MovieListController());
+    Get.put(DiscoverMovieController());
     Get.find<MovieListController>().getMovieListData();
     Get.find<MovieListController>().movieList.value.genres.length;
     _tabController = TabController(vsync: this, length: Get.find<MovieListController>().movieList.value.genres.length);
+    Get.find<DiscoverMovieController>().getDiscoverMovieData();
   }
 
   @override
@@ -85,12 +87,14 @@ class _AppListState extends State<AppList>  with TickerProviderStateMixin {
                     color: Colors.grey[300],
                     borderRadius: BorderRadius.circular(20.0)),
                 child: TabBar(
-                  controller: _tabController,
+                  //controller: _tabController,
                   isScrollable: true,
                   onTap: (index) {
                     setState(() {
                       if (kDebugMode) {
-                        print("selected tabIndex : ${_tabController?.index}");
+                        //print("selected tabIndex : ${_tabController?.index}");
+                        print("selected tabIndex : $index");
+                        tappedIndex = index;
                       }
                     });
                   },
@@ -130,7 +134,7 @@ class _AppListState extends State<AppList>  with TickerProviderStateMixin {
               ),
               Expanded(
                 child: TabBarView(
-                  controller: _tabController,
+                  //controller: _tabController,
                   /*children: const [
                               Padding(
                                 padding: EdgeInsets.only(top: 10.0),
@@ -166,22 +170,27 @@ class _AppListState extends State<AppList>  with TickerProviderStateMixin {
                           child: Card(
                               elevation: 4,
                               shape: RoundedRectangleBorder(
-                                side: BorderSide(
+                                side: const BorderSide(
                                     color: Colors.black,
                                     width: 1.0),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Center(child: Column(
                                 children: [
-                                  SizedBox(height: 20,),
-                                  Text("Movie Genres Id : ${Get.find<MovieListController>().movieList.value.genres.length}"),
-                                  SizedBox(height: 20,),
+                                  const SizedBox(height: 20,),
+                                  Obx(() {
+                                    return Text("Movie Genres Id : ${Get
+                                        .find<MovieListController>()
+                                        .movieList
+                                        .value
+                                        .genres[tappedIndex].id}");
+                                  }),
+                                  const SizedBox(height: 20,),
                                   _discoverMovie()
                                 ],
                               ))),
                         )
                         ),
-                        //_discoverMovie()
                       ],
                     );
                   }).toList(),
@@ -191,38 +200,23 @@ class _AppListState extends State<AppList>  with TickerProviderStateMixin {
           ),
         ),
       ),
-    );;
+    );
   }
 
   _discoverMovie() {
     return Padding(
       padding: const EdgeInsets.all(1.0),
-      child: FutureBuilder<DiscoverMovie>(
-        future: api.discoverMovie(),
-        builder: (context, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.active:
-
-            case ConnectionState.waiting:
-              return const Center(
-                  child: CircularProgressIndicator(
-                    backgroundColor: Colors.red,
-                  ));
-
-            case ConnectionState.none:
-              return Center(child: Text("Unable to connect right now"));
-
-            case ConnectionState.done:
-              return Column(
-                children: [
-                  Text("Title : ${snapshot.data!.results.first.title}"),
-                  Text("Vote : ${snapshot.data!.results.first.voteCount}"),
-                  Text("Release Date : ${snapshot.data!.results.first.releaseDate}"),
-                ],
-              );
-          }
-        },
-      ),
+      child: Obx(() {
+                return Column(
+                  children: [
+                    Text("Title : ${Get.find<DiscoverMovieController>().discoveMovie.value.results[tappedIndex].title}"),
+                    const SizedBox(height: 10,),
+                    Text("Vote : ${Get.find<DiscoverMovieController>().discoveMovie.value.results[tappedIndex].voteCount}"),
+                    const SizedBox(height: 10,),
+                    Text("Release Date : ${Get.find<DiscoverMovieController>().discoveMovie.value.results[tappedIndex].releaseDate}"),
+                  ],
+                );
+              })
     );
   }
 
